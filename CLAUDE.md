@@ -1,87 +1,324 @@
-# Workshop Context - Pod D
+# GiftMaster — Project Brief
 
-You are working with Pod D at the StellarPH x KMC Claude AI Workshop in Cebu, Philippines, April 10, 2026.
+## What This Is
 
-This is a 5-hour hands-on session (1 PM to 6 PM). By 6 PM, the pod needs something they can demo. Done and working beats perfect and unfinished. Keep that urgency in mind.
+GiftMaster is a Progressive Web App (PWA) that helps people become consistently thoughtful partners, friends, and family members. It's a **Relationship Intelligence Platform** — part CRM for personal relationships, part gift planner, part communication coach.
 
----
+The app stores rich profiles about the people in your life (personality types, love languages, preferences, important dates) and uses that context to proactively suggest gifts, affirmations, and meaningful gestures at the right moments.
 
-## Assume Zero Knowledge
+## Core Philosophy
 
-Treat everyone as if this is their first time using a terminal, GitHub, or Claude Code - unless they tell you otherwise. Never make anyone feel slow or behind.
+**"Never miss a moment that matters."**
 
-Never use a technical term without explaining it in plain English right after. Example: "commit (save your work to GitHub)" or "repo (your shared folder on GitHub)".
-
----
-
-## The Team (3 people)
-
-- Hannah Athena Estrera (Pod Leader) - Designer expanding into AI, youngest leader (~18), Subscription level, on Mac
-- Charles Ivan Ogalesco - Paid subscriber, Subscription level, on Windows
-- Jayne Carly Cabardo - Marketing Coordinator, Subscription level, on Windows
-
-Pod Leader: Hannah Athena Estrera
-
-Pod rationale: All three are subscription-level. Compact, fast-moving pod.
+Most people aren't bad at relationships — they're bad at *remembering* and *planning*. GiftMaster removes the cognitive load of being thoughtful by capturing context once and leveraging it forever.
 
 ---
 
-## Your Job
+## Tech Stack
 
-Check the section at the bottom of this file first - if the team has already picked their problem, it will be listed there. If not, help them decide:
-
-1. Ask each person: what's one thing at work that wastes your time or frustrates you?
-2. Help the group find the problem with the most shared pain
-3. Once they pick one, help them write it as one clear sentence before building anything
-
-Then break the work into pieces so everyone has something to do at the same time.
-
----
-
-## Where to Send Them
-
-| They ask about... | Send them to |
-|-------------------|-------------|
-| How to save or share their work | https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/using-your-repo.md |
-| What prompts to use | https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/prompt-cheatsheet.md |
-| What to build or how to pick a problem | https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/pod-kickoff.md |
-| How to present using NotebookLM | https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/presentation-guide.md |
-| All tools available today | https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/tools.md |
+| Layer | Technology | Why |
+|-------|-----------|-----|
+| **Framework** | React 18+ with Vite | Fast builds, modern DX, excellent PWA plugin ecosystem |
+| **Routing** | React Router v6 | Standard, file-based-friendly |
+| **Styling** | Tailwind CSS + CSS variables | Utility-first, themeable, mobile-first |
+| **UI Components** | shadcn/ui (radix primitives) | Accessible, composable, customizable |
+| **Local Database** | Dexie.js (IndexedDB wrapper) | Structured offline storage with reactive queries |
+| **State Management** | Zustand | Lightweight, no boilerplate, works with persistence |
+| **PWA** | vite-plugin-pwa (Workbox) | Service worker generation, install prompts, offline caching |
+| **Notifications** | Web Push API + service worker | Milestone reminders, suggestion nudges |
+| **Date/Time** | date-fns | Tree-shakeable, immutable, lightweight |
+| **Forms** | React Hook Form + Zod | Validation, performance, type safety |
+| **Icons** | Lucide React | Consistent, lightweight icon set |
+| **Animation** | Framer Motion | Page transitions, micro-interactions |
+| **Testing** | Vitest + Testing Library | Unit + integration testing |
+| **Rev 2 Backend** | Supabase | Auth, Postgres, real-time sync, edge functions |
+| **Rev 2 AI** | Claude API (Sonnet) | Gift intelligence, communication coaching |
 
 ---
 
-## GitHub Access
-
-Pod D has a token that lets Claude Code push to this repo. It's pinned in the Pod D Discord channel and looks like `github_pat_...`.
-
-Once someone has the token, they run this one command inside the repo folder:
+## Architecture Overview
 
 ```
-git remote set-url origin https://YOUR_TOKEN@github.com/arc-web/claudeconference-pod-d.git
+┌─────────────────────────────────────────────────┐
+│                   GiftMaster PWA                │
+│                                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │
+│  │ Onboard  │  │Dashboard │  │ Relationship │  │
+│  │  Flow    │  │  (Home)  │  │   Profiles   │  │
+│  └──────────┘  └──────────┘  └──────────────┘  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │
+│  │ Calendar │  │   Gift   │  │  Settings &  │  │
+│  │ & Events │  │  Tracker │  │   Premium    │  │
+│  └──────────┘  └──────────┘  └──────────────┘  │
+│                                                 │
+│  ┌─────────────────────────────────────────┐    │
+│  │           Zustand Store Layer           │    │
+│  │  (user, relationships, events, gifts)   │    │
+│  └─────────────────┬───────────────────────┘    │
+│                    │                            │
+│  ┌─────────────────▼───────────────────────┐    │
+│  │        Dexie.js / IndexedDB             │    │
+│  │  (offline-first persistent storage)     │    │
+│  └─────────────────────────────────────────┘    │
+│                                                 │
+│  ┌─────────────────────────────────────────┐    │
+│  │       Service Worker (Workbox)          │    │
+│  │  - Asset caching (precache)             │    │
+│  │  - Push notification handling           │    │
+│  │  - Background sync queue (Rev 2)        │    │
+│  └─────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────┘
+         │ (Rev 2 only)
+         ▼
+┌─────────────────────────────────────────────────┐
+│              Supabase Backend                   │
+│  ┌──────────┐ ┌───────────┐ ┌──────────────┐   │
+│  │   Auth   │ │  Postgres │ │ Edge Funcs   │   │
+│  │ (social) │ │  (sync)   │ │ (AI + APIs)  │   │
+│  └──────────┘ └───────────┘ └──────────────┘   │
+└─────────────────────────────────────────────────┘
 ```
 
-Replace `YOUR_TOKEN` with the actual token. Only needs to be done once per machine.
+---
 
-**If someone tries to push and gets an auth error:** ask them if they've run the command above. Walk them through it step by step - find the token in Discord, copy it, paste it into the command replacing `YOUR_TOKEN`, run it.
+## Project Structure
+
+```
+giftmaster/
+├── CLAUDE.md                    # This file — project context for Claude Code
+├── docs/
+│   ├── PRD.md                   # Detailed product requirements
+│   ├── DATA_MODEL.md            # Database schema & entity relationships
+│   ├── ARCHITECTURE.md          # Technical deep-dive
+│   └── ROADMAP.md               # Phased feature plan
+├── public/
+│   ├── manifest.json            # PWA manifest
+│   ├── icons/                   # App icons (192, 512, maskable)
+│   └── sw.js                    # Service worker (generated by Workbox)
+├── src/
+│   ├── main.jsx                 # App entry point
+│   ├── App.jsx                  # Root component + router
+│   ├── components/
+│   │   ├── ui/                  # shadcn/ui primitives
+│   │   ├── layout/              # Shell, BottomNav, Header
+│   │   ├── onboarding/          # Onboarding step components
+│   │   ├── relationships/       # Profile cards, detail views
+│   │   ├── calendar/            # Event list, milestone cards
+│   │   ├── gifts/               # Gift tracker, idea cards
+│   │   └── suggestions/         # AI suggestion cards (Rev 2)
+│   ├── pages/
+│   │   ├── Onboarding.jsx       # Multi-step setup wizard
+│   │   ├── Dashboard.jsx        # Home screen — upcoming + suggestions
+│   │   ├── Relationships.jsx    # All relationships list
+│   │   ├── RelationshipDetail.jsx
+│   │   ├── Calendar.jsx         # Timeline of events
+│   │   ├── GiftTracker.jsx      # Gift history & ideas
+│   │   ├── Settings.jsx         # Preferences, premium, export
+│   │   └── Premium.jsx          # Upgrade flow
+│   ├── stores/
+│   │   ├── useUserStore.js      # User profile state
+│   │   ├── useRelationshipStore.js
+│   │   ├── useEventStore.js     # Milestones & reminders
+│   │   ├── useGiftStore.js      # Gift ideas & history
+│   │   └── useAppStore.js       # UI state, onboarding progress
+│   ├── db/
+│   │   ├── database.js          # Dexie.js initialization & schema
+│   │   ├── seed.js              # Default data (holidays, suggestion templates)
+│   │   └── migrations.js        # Schema version migrations
+│   ├── services/
+│   │   ├── notifications.js     # Push notification setup & scheduling
+│   │   ├── suggestions.js       # Rule-based suggestion engine (Rev 1)
+│   │   ├── ai.js                # Claude API integration (Rev 2)
+│   │   └── sync.js              # Supabase sync logic (Rev 2)
+│   ├── hooks/
+│   │   ├── useUpcomingEvents.js  # Computed upcoming milestones
+│   │   ├── useSuggestions.js     # Active suggestion queue
+│   │   └── useInstallPrompt.js   # PWA install prompt handler
+│   ├── utils/
+│   │   ├── dates.js             # Date helpers, recurrence calculation
+│   │   ├── personality.js       # Personality type descriptions & tips
+│   │   └── constants.js         # Enums, defaults, personality options
+│   └── styles/
+│       ├── globals.css          # CSS variables, theme tokens
+│       └── animations.css       # Shared animation keyframes
+├── index.html
+├── vite.config.js               # Vite + PWA plugin config
+├── tailwind.config.js
+├── postcss.config.js
+├── package.json
+└── .env.example                 # Rev 2 env vars (Supabase, Claude API)
+```
 
 ---
 
-## Notes File
+## Design Direction
 
-There is a file called `notes.md` in this repo. Encourage the pod to fill it in as they go - it writes their presentation for them.
+### Brand Identity
+- **Name**: GiftMaster
+- **Tone**: Warm, confident, slightly playful — like a trusted friend who's great at this stuff
+- **Not**: Corporate, clinical, overly cute, or condescending
+
+### Visual Design
+- **Theme**: Warm & modern with depth — think "luxury meets approachability"
+- **Primary palette**: Deep warm tones (rich burgundy/wine or deep teal) with gold/amber accents
+- **Background**: Soft warm off-whites and cream tones (light mode), deep charcoal with warm undertones (dark mode)
+- **Typography**: Display font with personality (e.g., Playfair Display, Fraunces, or Lora) paired with clean body text (e.g., DM Sans, Plus Jakarta Sans, or Manrope)
+- **Cards**: Generous padding, subtle shadows, slight border radius — physical "card" feel
+- **Micro-interactions**: Subtle scale on tap, smooth page transitions, gentle entrance animations
+- **Mobile-first**: Designed for thumb-reach, bottom navigation, swipe gestures
+
+### Key UI Patterns
+- **Bottom navigation**: Dashboard | People | Calendar | Gifts | Settings
+- **Relationship cards**: Avatar/initials + name + relationship type + next upcoming event countdown
+- **Dashboard hero**: "Coming up" section showing the next 3-7 days of events with countdown badges
+- **Suggestion cards**: Dismissable cards with gift/gesture ideas, contextual to upcoming events
+- **Profile completeness**: Visual progress indicator encouraging users to fill rich profiles
 
 ---
 
-## What We're Building
+## Coding Standards
 
-> The pod fills this in after they pick their problem. If it's blank, that's the first thing to do.
+### General
+- Functional components only, no class components
+- Custom hooks for any shared logic
+- Co-locate tests with components (`Component.test.jsx`)
+- Prop types via JSDoc or TypeScript (prefer TS if scaffolding fresh)
+- Meaningful component names — `RelationshipProfileCard`, not `Card1`
 
-**Problem we're solving:**
+### State & Data
+- Zustand stores are the single source of truth
+- All persistent data flows through Dexie.js
+- Stores hydrate from IndexedDB on app launch
+- Optimistic UI updates — write to store immediately, persist async
+- Never store sensitive data unencrypted (Rev 2 concern)
 
-**Who it helps:**
+### PWA Requirements
+- Service worker must precache all app shell assets
+- App must be fully functional offline after first load
+- Install prompt should appear after 2nd visit or after onboarding completion
+- Notification permission requested contextually (during event setup), never on first load
 
-**Our approach:**
+### Accessibility
+- All interactive elements must be keyboard navigable
+- ARIA labels on icon-only buttons
+- Color contrast ratio ≥ 4.5:1
+- Reduced motion support via `prefers-reduced-motion`
 
 ---
 
-Let's go, Pod D.
+## Feature Tiers
+
+### Free Tier
+- 3 relationship profiles
+- Basic milestone tracking (birthdays, anniversaries)
+- Push notification reminders
+- Gift idea notepad (manual entry)
+- Basic personality type storage
+
+### Premium Tier ($4.99/mo or $39.99/yr)
+- Unlimited relationships
+- Full personality profiling (MBTI, DISC, Enneagram, Love Languages, Astrology)
+- AI-powered gift suggestions based on personality + history (Rev 2)
+- Communication coaching tips
+- Gift budget tracking & spending insights
+- Custom milestone types
+- Data export (JSON/CSV)
+- Cloud backup & multi-device sync (Rev 2)
+- Priority support
+
+---
+
+## Build Order (for Claude Code)
+
+Follow this sequence when building. Each phase should be fully functional before moving to the next.
+
+### Phase 1: Foundation
+1. Scaffold Vite + React project with Tailwind + shadcn/ui
+2. Configure PWA plugin (manifest, service worker, icons placeholder)
+3. Set up Dexie.js database with full schema
+4. Create Zustand stores with IndexedDB persistence
+5. Build app shell (layout, bottom nav, routing)
+
+### Phase 2: Onboarding
+1. Multi-step onboarding wizard (your profile setup)
+2. "About You" — name, personality types, preferences
+3. "Add Your First Person" — guided relationship creation
+4. Completion state → Dashboard redirect
+
+### Phase 3: Core Features
+1. Dashboard with upcoming events and quick actions
+2. Relationship list + detail view with full profile editing
+3. Event/milestone CRUD with recurrence support
+4. Gift idea notepad + gift history log
+5. Notification scheduling for upcoming events
+
+### Phase 4: Intelligence Layer
+1. Rule-based suggestion engine (no AI needed yet)
+   - "Sarah's birthday is in 14 days — start planning!"
+   - "It's been 30 days since you logged a gift for Mom"
+   - "Based on Alex's Love Language (Words of Affirmation), consider sending an encouraging text today"
+2. Personality-based communication tips (static content, mapped to types)
+3. Suggestion cards on Dashboard
+
+### Phase 5: Premium & Polish
+1. Premium gate (feature flags, not auth yet)
+2. Paywall UI with tier comparison
+3. Data export functionality
+4. Settings page (notification preferences, theme toggle, premium status)
+5. PWA install prompt flow
+6. Empty states, loading skeletons, error boundaries
+7. Responsive polish across device sizes
+
+### Phase 6: Rev 2 Prep (architecture only)
+1. Supabase schema migration scripts (mirror Dexie schema)
+2. Sync service skeleton (offline-first → cloud merge strategy)
+3. Auth flow UI (social login via Supabase)
+4. AI service interface (Claude API integration point)
+5. Environment variable structure for API keys
+
+---
+
+## Critical Implementation Notes
+
+### Offline-First Data Strategy
+The entire app must work without an internet connection after the initial load. This means:
+- All data lives in IndexedDB via Dexie.js FIRST
+- Zustand stores hydrate from Dexie on app init
+- Rev 2 sync is additive — local DB is always the primary
+- Conflict resolution: last-write-wins with timestamp, user prompt on true conflicts
+
+### Notification Scheduling
+Web Push has limitations — we can't schedule local notifications natively. Strategy:
+- Use service worker + periodic background sync (where supported)
+- Fallback: calculate reminders on each app open, show in-app notification queue
+- Rev 2: server-side push via Supabase Edge Functions on a cron
+
+### Personality Type Data
+Store raw type codes (e.g., "INTJ", "Type 5", "Acts of Service") and map to display content at render time. The `utils/personality.js` module should contain:
+- Descriptions for all types across all frameworks
+- Gift-giving tips per type
+- Communication style notes
+- Compatibility insights (stretch goal)
+
+Supported frameworks:
+- MBTI (16 types)
+- Love Languages (5 types, ranked)
+- Enneagram (9 types + wings)
+- DISC (4 primary + blends)
+- Astrological Sun Sign (12 signs)
+
+### Suggestion Engine (Rev 1 — Rule-Based)
+No AI needed for v1. The engine runs on simple rules:
+1. **Time-based**: Events approaching within configurable windows (30d, 14d, 7d, 3d, 1d)
+2. **Frequency-based**: "You haven't logged a gift/gesture for [person] in [X] days"
+3. **Personality-based**: Map love language → suggested gesture type
+4. **Seasonal**: Holiday calendar with culturally-aware defaults
+5. **Relationship-type-aware**: Different cadences for romantic vs. family vs. friend
+
+---
+
+## Reference: See Also
+- `docs/PRD.md` — Detailed feature specifications and user stories
+- `docs/DATA_MODEL.md` — Complete entity schemas with field definitions
+- `docs/ARCHITECTURE.md` — Technical architecture deep-dive
+- `docs/ROADMAP.md` — Milestone timeline and success metrics
