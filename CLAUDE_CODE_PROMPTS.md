@@ -1,224 +1,179 @@
-# GiftMaster — Claude Code Prompts
+# GiftMaster — Hetzner VPS Setup (Claude Code Prompt)
 
-## PROMPT 1: Stream 2 Scaffold (RUN THIS FIRST — your team is waiting)
-
-```
-Read CLAUDE.md and docs/DATA_MODEL.md and docs/ARCHITECTURE.md in this repo.
-
-Execute Phase 1 (Foundation) from CLAUDE.md. Scaffold the project INTO the current repo root directory — do NOT create a subdirectory. The existing CLAUDE.md, TEAM.md, README.md, notes.md, and docs/ folder must remain untouched.
-
-1. Initialize Vite + React project in the repo root:
-   - npm init, add vite.config.js, index.html, src/ structure
-   - Do NOT overwrite or delete any existing .md files or the docs/ folder
-
-2. Install all dependencies:
-   react, react-dom, react-router-dom, tailwindcss, @tailwindcss/vite, postcss, autoprefixer,
-   dexie, dexie-react-hooks, zustand, date-fns, framer-motion,
-   react-hook-form, zod, @hookform/resolvers, lucide-react,
-   vite-plugin-pwa, workbox-window,
-   @supabase/supabase-js
-
-3. Configure Tailwind with a custom theme:
-   - Primary: deep burgundy/wine (#7C2D3E with lighter/darker variants)
-   - Accent: warm gold/amber (#D4A843)
-   - Backgrounds: warm cream (#FBF7F4 light), warm charcoal (#1C1917 dark)
-   - Neutral scale: warm grays
-   - Load Google Fonts: "Fraunces" (display) + "DM Sans" (body)
-
-4. Configure PWA plugin in vite.config.js per docs/ARCHITECTURE.md:
-   - App name: GiftMaster
-   - Theme color: #7C2D3E
-   - Background: #FBF7F4
-   - Precache all static assets
-   - Runtime cache Google Fonts
-
-5. Add vercel.json for deployment:
-   - SPA rewrite rules
-   - Service worker cache headers
-   - Manifest no-cache header
-
-6. Create .env.example with:
-   VITE_SUPABASE_URL=https://zqydrgcqpvslqkregawa.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWRyZ2NxcHZzbHFrcmVnYXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3ODcwOTMsImV4cCI6MjA5MTM2MzA5M30.3yVWC8fwc0u3FEdy4ua85Bezax8ia54QQFraZU29S04
-   VITE_AGENT_API_URL=https://87.99.133.69:3001
-
-   Also create .env with the same values (actual values, not placeholders).
-
-7. Set up Dexie.js database (src/db/database.js) with ALL 7 tables from docs/DATA_MODEL.md:
-   user, relationships, events, preferences, gifts, suggestions, settings
-   Include the full index definitions.
-
-8. Create Zustand stores (src/stores/):
-   - useUserStore.js — user profile CRUD, hydrate from Dexie
-   - useRelationshipStore.js — relationship CRUD with archive support
-   - useEventStore.js — event CRUD with next_occurrence recalculation
-   - useGiftStore.js — gift CRUD with status progression
-   - useAppStore.js — UI state, onboarding progress, theme
-
-   Each store must have:
-   - hydrate() method that reads from Dexie
-   - Optimistic updates (update Zustand immediately, persist to Dexie async)
-   - All CRUD operations (add, update, delete/archive)
-
-9. Create a Supabase client (src/lib/supabase.js) using the env vars.
-
-10. Build the app shell:
-    - src/App.jsx with React Router, all routes from docs/ARCHITECTURE.md
-    - src/components/layout/AppShell.jsx — main layout wrapper
-    - src/components/layout/BottomNav.jsx — 5 tabs (Home, People, Calendar, Gifts, Settings) using lucide-react icons
-    - Route guard: if onboarding not complete, redirect to /onboarding
-    - Theme provider with light/dark/system support using CSS variables
-
-11. Create placeholder page components for every route (just the component name as an h1 for now):
-    Dashboard, Onboarding, Relationships, RelationshipDetail, Calendar, GiftTracker, Settings, Premium
-
-12. Set up globals.css with:
-    - CSS variables for all theme colors (light + dark mode via prefers-color-scheme)
-    - Font imports for Fraunces + DM Sans
-    - Base styles, smooth scrolling, selection colors
-
-13. Create src/lib/supabase.js for the Supabase client connection.
-
-14. Verify `npm run dev` works, then `npm run build` succeeds.
-
-15. Commit everything and push to main with message:
-    "feat: scaffold Vite + React PWA with Dexie, Zustand, Tailwind, and Supabase"
-
-Use the git remote that's already configured. The team is waiting on this scaffold to start their work.
-```
+Copy everything below the line and paste into Claude Code.
 
 ---
 
-## PROMPT 2: Hetzner VPS Setup (run after scaffold is pushed)
+Read docs/INFRASTRUCTURE.md and docs/MESSAGING.md in this repo for full context on what we're building.
 
-```
-Read docs/INFRASTRUCTURE.md and docs/MESSAGING.md in this repo.
+## Context
 
-I have a fresh Hetzner VPS running Ubuntu 24.04:
+GiftMaster is a Next.js 14 app deployed on Vercel with Supabase for auth and data. This VPS will run:
+1. The Browser Agent API — a Node.js service that uses Playwright to research gifts, make reservations, and order items on behalf of users
+2. ZeroClaw — a Rust-based messaging runtime that sends reminders and handles conversational interactions via WhatsApp/Telegram
+
+The Agent API will be called server-to-server from Next.js API routes on Vercel (not from the browser directly). ZeroClaw will send proactive messages to users and receive replies via webhooks.
+
+## Server Details
+
 - IP: 87.99.133.69
+- OS: Ubuntu 24.04 (fresh install)
 - Access: root with password (I'll provide when prompted)
-- No SSH key configured yet
+- Spec: CPX11 — 2 vCPU, 2GB RAM, 40GB SSD, Ashburn VA
 
-Connect to the server via SSH and perform the full setup:
+## Supabase Connection
 
-PHASE 1 — System Basics:
-1. Update and upgrade all packages
-2. Set timezone to UTC
-3. Set hostname to giftmaster-agent
-4. Install essential packages: curl, wget, git, build-essential, pkg-config, libssl-dev
-
-PHASE 2 — Node.js 20:
-1. Install Node.js 20 via NodeSource
-2. Verify: node --version, npm --version
-3. Install PM2 globally for process management
-
-PHASE 3 — Redis:
-1. Install Redis server
-2. Enable and start the service
-3. Verify: redis-cli ping → PONG
-4. Configure Redis to only listen on localhost
-
-PHASE 4 — Playwright:
-1. Install Playwright system dependencies: npx playwright install-deps
-2. Install Chromium only: npx playwright install chromium
-3. Verify Chromium binary exists
-
-PHASE 5 — Rust + ZeroClaw:
-1. Install Rust via rustup (stable toolchain)
-2. Clone ZeroClaw: git clone https://github.com/zeroclaw-labs/zeroclaw.git /opt/zeroclaw
-3. Build ZeroClaw: cargo build --release
-4. Copy binary to /usr/local/bin/zeroclaw
-5. Create config directory: mkdir -p /root/.zeroclaw
-6. Create a starter config.toml with Claude as the AI provider (placeholder API key — I'll fill in later):
-
-[config.toml should include:]
-- default_provider = "anthropic"
-- default_model = "anthropic/claude-sonnet-4-20250514"
-- memory backend = "sqlite"
-- gateway with require_pairing = true
-- autonomy level = "supervised"
-- WhatsApp channel config section (commented out, with placeholder values)
-- Telegram channel config section (commented out, with placeholder values)
-
-PHASE 6 — Agent API:
-1. Create /opt/giftmaster-agent/
-2. Initialize Node.js project
-3. Install: express, bullmq, ioredis, playwright, dotenv, helmet, cors, @anthropic-ai/sdk, @supabase/supabase-js
-4. Create server.js with the Agent API skeleton from docs/INFRASTRUCTURE.md:
-   - POST /tasks → queue a new task
-   - GET /tasks/:id → check task status
-   - POST /tasks/:id/cancel → cancel task
-   - GET /health → health check
-   - Authentication middleware (validates bearer token)
-   - BullMQ worker with concurrency 2
-   - Task type router (research_gifts, book_reservation, order_flowers, custom)
-5. Create .env with placeholders:
-   ANTHROPIC_API_KEY=sk-ant-placeholder
-   SUPABASE_URL=https://zqydrgcqpvslqkregawa.supabase.co
-   SUPABASE_SERVICE_KEY=placeholder
-   ALLOWED_ORIGINS=https://giftmaster.vercel.app
-   PORT=3001
-6. Create a stub for each task worker:
-   - workers/research-gifts.js
-   - workers/book-reservation.js
-   - workers/order-flowers.js
-   - workers/custom-task.js
-   Each should export an async function that accepts (instructions, context, job) and returns a result object.
-
-PHASE 7 — Process Management (PM2):
-1. Create PM2 ecosystem config for the Agent API
-2. Start the Agent API with PM2
-3. Configure PM2 to auto-start on boot: pm2 startup, pm2 save
-
-PHASE 8 — Firewall:
-1. Configure UFW:
-   - Allow SSH (22/tcp)
-   - Allow HTTPS (443/tcp)
-   - Allow port 3001/tcp (Agent API — we'll put this behind nginx+SSL later)
-   - Enable UFW
-2. Verify rules
-
-PHASE 9 — Nginx Reverse Proxy (optional but recommended):
-1. Install nginx
-2. Create a basic reverse proxy config for port 3001
-3. For now, use HTTP — we'll add SSL with Let's Encrypt once we have a domain
-
-PHASE 10 — SSH Key Setup:
-1. Generate an ed25519 SSH key pair on the server
-2. Add the public key to authorized_keys
-3. Show me the private key so I can save it locally
-4. Disable password authentication in sshd_config
-5. Restart sshd
-
-PHASE 11 — Verification:
-1. Verify all services are running: Redis, Agent API (PM2), nginx
-2. curl localhost:3001/health should return { status: "ok" }
-3. Show me a summary of everything installed and all service statuses
-
-Supabase connection details:
 - Project ID: zqydrgcqpvslqkregawa
 - URL: https://zqydrgcqpvslqkregawa.supabase.co
-- Anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWRyZ2NxcHZzbHFrcmVnYXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3ODcwOTMsImV4cCI6MjA5MTM2MzA5M30.3yVWC8fwc0u3FEdy4ua85Bezax8ia54QQFraZU29S04
-```
+- Anon Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWRyZ2NxcHZzbHFrcmVnYXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3ODcwOTMsImV4cCI6MjA5MTM2MzA5M30.3yVWC8fwc0u3FEdy4ua85Bezax8ia54QQFraZU29S04
 
----
+## Setup — Execute in order
 
-## Execution Order
+SSH into root@87.99.133.69 and perform all of the following:
 
-1. **Run Prompt 1 first** — your team needs the scaffold to start building
-2. Push to main, announce in Discord: "Scaffold is live, pull and start your streams"
-3. Connect the repo to Vercel (GitHub integration, takes 2 min in browser)
-4. **Run Prompt 2** — VPS setup runs in parallel while team builds the PWA
-5. Once both are done, add the Vercel deployment URL to the Hetzner ALLOWED_ORIGINS
+### Phase 1 — System Basics
+1. apt update && apt upgrade -y
+2. hostnamectl set-hostname giftmaster-agent
+3. timedatectl set-timezone UTC
+4. apt install -y curl wget git build-essential pkg-config libssl-dev unzip
 
-## Key Credentials Reference
+### Phase 2 — Node.js 20
+1. Install Node.js 20 via NodeSource: curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt install -y nodejs
+2. Install PM2 globally: npm install -g pm2
+3. Verify: node --version && pm2 --version
 
-| Service | Detail |
-|---------|--------|
-| **GitHub Repo** | arc-web/claudeconference-pod-d |
-| **Supabase Project ID** | zqydrgcqpvslqkregawa |
-| **Supabase URL** | https://zqydrgcqpvslqkregawa.supabase.co |
-| **Supabase Anon Key** | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeWRyZ2NxcHZzbHFrcmVnYXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3ODcwOTMsImV4cCI6MjA5MTM2MzA5M30.3yVWC8fwc0u3FEdy4ua85Bezax8ia54QQFraZU29S04 |
-| **Hetzner VPS IP** | 87.99.133.69 |
-| **Hetzner VPS OS** | Ubuntu 24.04, CPX11, Ashburn VA |
-| **Agent API Port** | 3001 |
+### Phase 3 — Redis
+1. apt install -y redis-server
+2. Edit /etc/redis/redis.conf: set bind to 127.0.0.1 ::1
+3. systemctl enable redis-server && systemctl restart redis-server
+4. Verify: redis-cli ping (should return PONG)
+
+### Phase 4 — Playwright
+1. npx -y playwright install-deps
+2. npx -y playwright install chromium
+3. Verify Chromium installed successfully
+Note: With 2GB RAM, set MAX_CONCURRENT_BROWSERS=1
+
+### Phase 5 — Rust & ZeroClaw
+1. Install Rust: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+2. source $HOME/.cargo/env
+3. git clone https://github.com/zeroclaw-labs/zeroclaw.git /opt/zeroclaw
+4. cd /opt/zeroclaw && cargo build --release
+   (This takes several minutes on CPX11 — that's expected)
+5. cp target/release/zeroclaw /usr/local/bin/zeroclaw
+6. mkdir -p /root/.zeroclaw
+7. Create /root/.zeroclaw/config.toml:
+
+api_key = "PLACEHOLDER_ANTHROPIC_KEY"
+default_provider = "anthropic"
+default_model = "anthropic/claude-sonnet-4-20250514"
+default_temperature = 0.7
+
+[memory]
+backend = "sqlite"
+auto_save = true
+
+[gateway]
+require_pairing = true
+allow_public_bind = false
+
+[autonomy]
+level = "supervised"
+workspace_only = true
+allowed_commands = ["git", "npm", "node", "curl"]
+forbidden_paths = ["/etc", "/root/.ssh", "/root/.gnupg"]
+
+# Uncomment and configure when ready:
+# [channels_config.whatsapp]
+# access_token = "EAABx..."
+# phone_number_id = "123456789"
+# verify_token = "giftmaster-verify-secret"
+# allowed_numbers = ["*"]
+
+# [channels_config.telegram]
+# token = "bot123456:ABC..."
+# allowed_users = ["*"]
+
+### Phase 6 — Agent API
+
+Create /opt/giftmaster-agent/ with a full Node.js Express app:
+
+The API has these endpoints:
+- GET /health — returns queue status (no auth)
+- POST /tasks — queue a new agent task (auth required)
+- GET /tasks/:id — check task status (auth required)
+- POST /tasks/:id/cancel — cancel a task (auth required)
+
+Auth is via a shared secret in the Authorization: Bearer header, validated against AGENT_SECRET env var. This secret will be shared with the Vercel Next.js app for server-to-server calls.
+
+The task queue uses BullMQ backed by Redis with concurrency=1 (due to 2GB RAM limit).
+
+Task types: research_gifts, book_reservation, order_flowers, custom
+
+Each task type has its own worker file in /opt/giftmaster-agent/workers/:
+- research-gifts.js — uses Claude API to generate search strategy, then Playwright to browse
+- book-reservation.js — stub for now
+- order-flowers.js — stub for now
+- custom-task.js — stub for now
+
+The research-gifts worker should:
+1. Call Claude API to analyze the person's context and generate search queries
+2. Use Playwright to open a headless browser and execute searches
+3. Call Claude API again to evaluate and rank results against the person's preferences
+4. Return structured results with title, URL, price, confidence score, and reasoning
+
+All workers update the Supabase agent_tasks table with status changes (in_progress, completed, failed) using the Supabase service key.
+
+.env file for /opt/giftmaster-agent/:
+PORT=3001
+NODE_ENV=production
+ANTHROPIC_API_KEY=PLACEHOLDER
+SUPABASE_URL=https://zqydrgcqpvslqkregawa.supabase.co
+SUPABASE_SERVICE_KEY=PLACEHOLDER
+AGENT_SECRET=PLACEHOLDER_SHARED_SECRET
+ALLOWED_ORIGINS=https://claudeconference-pod-d.vercel.app
+REDIS_URL=redis://127.0.0.1:6379
+MAX_CONCURRENT_BROWSERS=1
+TASK_TIMEOUT_MS=300000
+
+Dependencies: express, bullmq, ioredis, playwright, dotenv, helmet, cors, @anthropic-ai/sdk, @supabase/supabase-js
+
+### Phase 7 — PM2 Process Management
+1. Create ecosystem.config.js in /opt/giftmaster-agent/ with max_memory_restart: '500M'
+2. pm2 start ecosystem.config.js
+3. pm2 startup && pm2 save
+
+### Phase 8 — Nginx Reverse Proxy
+1. apt install -y nginx
+2. Create /etc/nginx/sites-available/giftmaster-agent with reverse proxy to localhost:3001
+3. Include proxy headers (X-Real-IP, X-Forwarded-For, Host)
+4. Set proxy_read_timeout to 300s (agent tasks can take a while)
+5. Enable the site, remove default, nginx -t && systemctl reload nginx
+
+### Phase 9 — Firewall
+1. ufw allow 22/tcp
+2. ufw allow 80/tcp
+3. ufw allow 443/tcp
+4. ufw --force enable
+
+### Phase 10 — SSH Key Setup
+1. ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ""
+2. cat /root/.ssh/id_ed25519.pub >> /root/.ssh/authorized_keys
+3. Show me the private key so I can save it locally
+4. Set PasswordAuthentication no in /etc/ssh/sshd_config
+5. systemctl restart sshd
+
+### Phase 11 — Verification
+Run all of these and show me the results:
+1. node --version
+2. redis-cli ping
+3. pm2 list
+4. curl -s http://localhost:3001/health
+5. nginx -t
+6. ufw status
+7. which zeroclaw
+8. systemctl status redis-server --no-pager
+9. df -h /
+10. free -h
+
+Give me a complete summary of what's running, any errors encountered, and next steps.
