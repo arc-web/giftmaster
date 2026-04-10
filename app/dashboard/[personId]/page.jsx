@@ -121,7 +121,8 @@ export default function PersonPage() {
       body: JSON.stringify({ content: newNote.trim() }),
     })
     if (res?.ok) {
-      setNotes(prev => [await res.json(), ...prev])
+      const note = await res.json()
+      setNotes(prev => [note, ...prev])
       setNewNote('')
     }
   }
