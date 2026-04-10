@@ -1,7 +1,7 @@
 <div align="center">
 
 ![](https://img.shields.io/badge/StellarPH_x_KMC-Claude_AI_Workshop-7B2FBE?style=for-the-badge)
-![](https://img.shields.io/badge/Pod_D-5_Members-F5A623?style=for-the-badge)
+![](https://img.shields.io/badge/Pod_D-3_Members-F5A623?style=for-the-badge)
 
 # Pod D
 
@@ -13,15 +13,13 @@
 
 ## Who Is In My Pod?
 
-| | Name | Role | Computer |
-|---|------|------|----------|
-| 👑  **Danilo Jr. B. Casim** | Pod Leader | Mac |
-|     **Vilmore Villadolid** | Member | Windows |
-|     **Rumejan Barbarona** | Member | Mac |
-|     **Gabriel Martinez Portillo** | Member | Windows |
-|     **Carl** | Member | - |
+| | Name | Role | Level | Computer |
+|---|------|------|-------|----------|
+| 👑  **Hannah Athena Estrera** | Pod Leader | Subscription | Mac |
+|     **Charles Ivan Ogalesco** | Member | Subscription | Windows |
+|     **Jayne Carly Cabardo** | Member | Subscription | Windows |
 
-**Danilo Jr. B. Casim** is your pod leader - they keep things moving, call votes when the group is stuck, and make sure everyone has something to do. The leader can hand the role to someone else if they want to.
+**Hannah Athena Estrera** is your pod leader - they keep things moving, call votes when the group is stuck, and make sure everyone has something to do.
 
 ---
 
