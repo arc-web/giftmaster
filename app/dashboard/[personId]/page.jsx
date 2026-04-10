@@ -16,6 +16,8 @@ export default function PersonPage() {
   const [messages, setMessages] = useState([])
   const [chatInput, setChatInput] = useState('')
   const [loading, setLoading] = useState(true)
+  const [suggestion, setSuggestion] = useState('')
+  const [suggesting, setSuggesting] = useState(false)
   const chatBottomRef = useRef(null)
 
   async function authFetch(path, options = {}) {
@@ -112,6 +114,19 @@ export default function PersonPage() {
     }
   }
 
+  // --- Suggest ---
+  async function getSuggestion() {
+    setSuggesting(true)
+    setSuggestion('')
+    const res = await authFetch(`/api/persons/${personId}/suggest`, { method: 'POST' })
+    if (res?.ok) {
+      const data = await res.json()
+      setSuggestion(data.suggestion)
+      setTab('chat')
+    }
+    setSuggesting(false)
+  }
+
   // --- Notes ---
   async function addNote(e) {
     e.preventDefault()
@@ -162,12 +177,19 @@ export default function PersonPage() {
       {tab === 'chat' && (
         <div className="chat-wrap">
           <div className="chat-messages">
-            {messages.length === 0 && <p className="empty">No messages yet.</p>}
+            {messages.length === 0 && !suggestion && !suggesting && <p className="empty">No messages yet.</p>}
             {messages.map(msg => (
               msg.type === 'agent_card'
                 ? <AgentCard key={msg.id} msg={msg} onAction={updateCardStatus} />
                 : <UserBubble key={msg.id} msg={msg} />
             ))}
+            {suggesting && (
+              <div className="agent-card" style={{ opacity: 0.6 }}>
+                <div className="agent-card-header"><span className="agent-label">✨ GiftMaster</span></div>
+                <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>Thinking of ideas…</p>
+              </div>
+            )}
+            {suggestion && !suggesting && <SuggestionBubble text={suggestion} />}
             <div ref={chatBottomRef} />
           </div>
           <form className="chat-input-row" onSubmit={sendMessage}>
@@ -177,6 +199,9 @@ export default function PersonPage() {
               placeholder="Type a message…"
               autoComplete="off"
             />
+            <button className="btn-secondary btn-sm" type="button" onClick={getSuggestion} disabled={suggesting} style={{ whiteSpace: 'nowrap' }}>
+              {suggesting ? '✨…' : '✨ Suggest'}
+            </button>
             <button className="btn-primary" type="submit">Send</button>
           </form>
         </div>
@@ -225,6 +250,45 @@ export default function PersonPage() {
           ))}
         </>
       )}
+    </div>
+  )
+}
+
+function SuggestionBubble({ text }) {
+  const lines = text.split('\n').filter(l => l.trim())
+  const elements = []
+  for (const line of lines) {
+    if (line.startsWith('**') && line.endsWith('**')) {
+      elements.push({ type: 'heading', text: line.replace(/\*\*/g, '') })
+    } else if (line.match(/^\*\*(.+)\*\*/)) {
+      // **Category** possibly with trailing text
+      elements.push({ type: 'heading', text: line.replace(/\*\*/g, '') })
+    } else if (line.startsWith('• ') || line.startsWith('- ')) {
+      elements.push({ type: 'bullet', text: line.replace(/^[•\-]\s*/, '') })
+    } else {
+      elements.push({ type: 'text', text: line })
+    }
+  }
+
+  return (
+    <div className="agent-card">
+      <div className="agent-card-header">
+        <span className="agent-label">✨ GiftMaster</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+        {elements.map((el, i) => {
+          if (el.type === 'heading') return (
+            <p key={i} style={{ fontWeight: 700, fontSize: '0.9rem', marginTop: i > 0 ? '0.75rem' : 0, marginBottom: '0.15rem' }}>{el.text}</p>
+          )
+          if (el.type === 'bullet') return (
+            <div key={i} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.875rem', lineHeight: 1.5 }}>
+              <span style={{ flexShrink: 0 }}>•</span>
+              <span>{el.text}</span>
+            </div>
+          )
+          return <p key={i} style={{ fontSize: '0.875rem', lineHeight: 1.5, marginTop: '0.5rem' }}>{el.text}</p>
+        })}
+      </div>
     </div>
   )
 }
