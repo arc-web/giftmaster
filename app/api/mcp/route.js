@@ -90,6 +90,26 @@ function createServer() {
     }
   )
 
+  // Add a note to a person (called when user mentions info about them in chat)
+  server.tool(
+    'add_person_note',
+    'Save a new note about a person — use this when the user mentions something about them in conversation (e.g. "she doesn\'t like sunflowers", "he loves hiking")',
+    {
+      person_id: z.string().describe('UUID of the person'),
+      user_id: z.string().describe('UUID of the user who owns this person'),
+      content: z.string().describe('The note content to save, written as a clean fact about the person'),
+    },
+    async ({ person_id, user_id, content }) => {
+      const { data, error } = await adminClient()
+        .from('person_notes')
+        .insert({ person_id, user_id, content })
+        .select()
+        .single()
+      if (error) throw new Error(error.message)
+      return { content: [{ type: 'text', text: JSON.stringify(data) }] }
+    }
+  )
+
   // Mark a card as done or rejected
   server.tool(
     'update_card_status',
