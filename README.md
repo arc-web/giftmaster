@@ -66,5 +66,6 @@ Just say - *"save my work and push it to the repo"*
 - **Pod Kickoff Guide** - https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/pod-kickoff.md
 - **All tools for today** - https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/tools.md
 - **How to use this repo** - https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/using-your-repo.md
+- **Presentation & NotebookLM guide** - https://github.com/arc-web/stellarph-claude-workshop/blob/main/guides/presentation-guide.md
 - **Discord - Pod D channel** - https://discord.gg/g2pJzjmV
 - **Your build notes** - [notes.md](notes.md)
