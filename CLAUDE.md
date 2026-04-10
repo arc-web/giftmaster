@@ -31,6 +31,7 @@ Most people aren't bad at relationships — they're bad at *remembering* and *pl
 | **Icons** | Lucide React | Consistent, lightweight icon set |
 | **Animation** | Framer Motion | Page transitions, micro-interactions |
 | **Testing** | Vitest + Testing Library | Unit + integration testing |
+| **Messaging** | ZeroClaw (Rust) | WhatsApp, Telegram, Signal delivery — proactive reminders + conversational interface |
 | **Hosting** | Vercel | Auto-deploy from GitHub, CDN, edge functions |
 | **Backend** | Supabase | Auth, Postgres, real-time sync, edge functions |
 | **Browser Agent** | Hetzner VPS + Playwright | Automated gift research, reservations, ordering |
@@ -290,10 +291,10 @@ The entire app must work without an internet connection after the initial load. 
 - Conflict resolution: last-write-wins with timestamp, user prompt on true conflicts
 
 ### Notification Scheduling
-Web Push has limitations — we can't schedule local notifications natively. Strategy:
-- Use service worker + periodic background sync (where supported)
-- Fallback: calculate reminders on each app open, show in-app notification queue
-- Rev 2: server-side push via Supabase Edge Functions on a cron
+Primary notification delivery is via **ZeroClaw messaging** (WhatsApp, Telegram, Signal) — not web push. Strategy:
+- **Rev 1 (PWA only)**: In-app notification queue calculated on each app open. Web Push as best-effort backup.
+- **Rev 2 (ZeroClaw)**: Proactive messages sent through user's preferred messaging channel via cron scheduler on Hetzner VPS. Users can reply conversationally to take action.
+- See `docs/MESSAGING.md` for full messaging architecture, conversation flows, and message templates.
 
 ### Personality Type Data
 Store raw type codes (e.g., "INTJ", "Type 5", "Acts of Service") and map to display content at render time. The `utils/personality.js` module should contain:
@@ -333,5 +334,6 @@ No AI needed for v1. The engine runs on simple rules:
 - `docs/DATA_MODEL.md` — Complete entity schemas with field definitions
 - `docs/ARCHITECTURE.md` — Technical architecture deep-dive
 - `docs/INFRASTRUCTURE.md` — Vercel, Supabase, and Hetzner browser agent setup
+- `docs/MESSAGING.md` — ZeroClaw messaging layer: WhatsApp/Telegram delivery, conversation flows, multi-user routing
 - `docs/ROADMAP.md` — Milestone timeline and success metrics
 - `TEAM.md` — Team roles, file ownership, and Claude Code starter prompts
